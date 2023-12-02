@@ -4,7 +4,7 @@ base = None
 
 executables = [Executable("game.py", base=base)]
 
-packages = ["idna"]
+packages = ["idna","pygame"]
 options = {
     'build_exe': {    
         'packages':packages,
