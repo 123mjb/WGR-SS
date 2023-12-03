@@ -4,6 +4,8 @@ import pygame.gfxdraw
 import random
 import math
 
+from pygame.sprite import AbstractGroup
+
 pygame.init()
 FPS = 60
 clock = pygame.time.Clock()
@@ -21,6 +23,7 @@ class Sprite(pygame.sprite.Sprite):
         self.colour = colour
         self.rs = [1/16,1/8,1/2,3/4,15/16,7/16,14/16]
         self.degs = [random.randrange(0,360) for _ in range(0,7)]
+        self.jumping = False
         
         head_width = width/5
         head_height = height/4
@@ -58,8 +61,7 @@ class Sprite(pygame.sprite.Sprite):
         except NameError: s=0
         if self.progression % 20 == 0: s = random.randrange(0,31)
         for i in range(0,7):
-            pygame.draw.arc(self.image,self.colour,Rect(int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round(self.adheight*self.rs[i])),int(round(self.adheight*self.rs[i]))),math.radians(self.progression+self.degs[i]),math.radians(self.progression+self.degs[i]+15+s),int(round(self.adwidth/2/15)))
-        
+            pygame.draw.arc(self.image,self.colour,Rect(int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round(self.adheight*self.rs[i])),int(round(self.adheight*self.rs[i]))),math.radians(self.progression+self.degs[i]),math.radians(self.progression+self.degs[i]+15+s),int(round(self.adwidth/2/15)))      
     def move(self):
         pressed_keys = pygame.key.get_pressed()
        #if pressed_keys[K_UP]:
@@ -74,13 +76,32 @@ class Sprite(pygame.sprite.Sprite):
             if self.rect.right < screen.get_width():
                 self.rect.move_ip(5, 0)
                 self.movesideways(1)
+
+class terrainsprites(pygame.sprite.Sprite):
+    def __init__(self, color, width,height) -> None:
+        super().__init__()
+        self.image = pygame.Surface([width,height])
+        pygame.draw.rect(self.image,color,pygame.Rect(0,0,width,height))
         
+class portalsprites(pygame.sprite.Sprite):
+    def __init__(self, color, width,height) -> None:
+        super().__init__()
+        self.image = pygame.Surface([width,height])
+        pygame.draw.rect(self.image,color,pygame.Rect(0,0,width,height))
+    def changelevel()
+
+class Levels:
+    def start():
+        
+    def one():
+        
+
+terrain_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
-object_ = Sprite(white,200,200)
-object_.rect.x = screen.get_width()
+object_ = Sprite(white,100,100)
+object_.rect.x = screen.get_width()/2
 object_.rect.y = screen.get_height()/2
-
 all_sprites_list.add(object_)
 
 while running:
