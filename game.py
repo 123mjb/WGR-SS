@@ -9,7 +9,8 @@ from pygame.sprite import AbstractGroup
 pygame.init()
 FPS = 60
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((1280,720))
+screensize = (1280,720)
+screen = pygame.display.set_mode(screensize)
 running = True
 white = (255,255,255)
 class Sprite(pygame.sprite.Sprite):
@@ -24,6 +25,8 @@ class Sprite(pygame.sprite.Sprite):
         self.rs = [1/16,1/8,1/2,3/4,15/16,7/16,14/16]
         self.degs = [random.randrange(0,360) for _ in range(0,7)]
         self.jumping = False
+        self.crouching = False
+        self.ymoment = 0
         
         head_width = width/5
         head_height = height/4
@@ -64,18 +67,20 @@ class Sprite(pygame.sprite.Sprite):
             pygame.draw.arc(self.image,self.colour,Rect(int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round((self.adheight-self.adheight*self.rs[i])/2)),int(round(self.adheight*self.rs[i])),int(round(self.adheight*self.rs[i]))),math.radians(self.progression+self.degs[i]),math.radians(self.progression+self.degs[i]+15+s),int(round(self.adwidth/2/15)))      
     def move(self):
         pressed_keys = pygame.key.get_pressed()
-       #if pressed_keys[K_UP]:
-            #self.rect.move_ip(0, -5)
-       #if pressed_keys[K_DOWN]:
-            #self.rect.move_ip(0,5)
+        if pressed_keys[K_w] or pressed_keys[K_SPACE]:
+            self.jumping = True
+            self.rect.move_ip(0, -5)
+        if pressed_keys[K_s]:
+            self.crouching = True
+            self.rect.move_ip(0,5)
         if pressed_keys[K_a]:
             if self.rect.left > 0:
                 self.rect.move_ip(-5, 0)
-                self.movesideways(-1)
+                if not self.jumping: self.movesideways(-1)
         if pressed_keys[K_d]:
             if self.rect.right < screen.get_width():
                 self.rect.move_ip(5, 0)
-                self.movesideways(1)
+                if not self.jumping: self.movesideways(1)
 
 class terrainsprites(pygame.sprite.Sprite):
     def __init__(self, color, width,height) -> None:
@@ -84,19 +89,29 @@ class terrainsprites(pygame.sprite.Sprite):
         pygame.draw.rect(self.image,color,pygame.Rect(0,0,width,height))
         
 class portalsprites(pygame.sprite.Sprite):
-    def __init__(self, color, width,height) -> None:
+    def __init__(self, color,coords, width,height,level) -> None:
         super().__init__()
         self.image = pygame.Surface([width,height])
+        self.interact = level
         pygame.draw.rect(self.image,color,pygame.Rect(0,0,width,height))
-    def changelevel()
+    def changelevel(self):
+        if self.interact ==0:Levels.start()
+        elif self.interact ==1:Levels.one()
 
 class Levels:
-    def start():
-        
-    def one():
-        
+    def reset(self,coords:tuple[int,int]):
+        terrain_sprites.empty()
+        screen.fill((0,0,0))
+        object_.rect.x = coords[0]
+        object_.rect.y = coords[1]
+    def start(self):
+        self.reset((screensize[0]/2,screensize[1]/2))
+        portal_sprites.add(portalsprites((255,255,255),(0,0),10,20,1))
+    def one(self):
+        self.reset((screensize[0]/2,screensize[1]/2))
 
 terrain_sprites = pygame.sprite.Group()
+portal_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
 object_ = Sprite(white,100,100)
@@ -109,6 +124,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
+    if not pygame.sprite.spritecollideany(object_,)
     object_.move()
     all_sprites_list.update()
     screen.fill((0,0,0))
