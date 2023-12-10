@@ -119,12 +119,12 @@ class Sprite(pygame.sprite.Sprite):
             self.crouching = True
         if pressed_keys[K_a]:
             if self.rect.left > 0:
-                self.rect.move_ip(-5, 0)
-                if not self.jumping: self.movesideways(-1)
+                self.movecheck(-5)
+                if not self.falling: self.movesideways(-1)
         if pressed_keys[K_d]:
             if self.rect.right < screen.get_width():
-                self.rect.move_ip(5, 0)
-                if not self.jumping: self.movesideways(1)
+                self.movecheck(5)
+                if not self.falling: self.movesideways(1)
         self.rect.move_ip(0,-self.ymoment)
         __ = pygame.sprite.spritecollideany(self,terrain_sprites)
         if not __ is None:
@@ -134,7 +134,16 @@ class Sprite(pygame.sprite.Sprite):
         else: 
             self.ymoment -=1
             self.falling = True
-            
+    def movecheck(self,direction):
+        self.rect.move_ip(direction,0)
+        __ = pygame.sprite.spritecollideany(self,terrain_sprites)
+        if not __ is None:
+            if direction>0:
+                self.rect.right = __.rect.left
+            else:
+                self.rect.left = __.rect.right
+        else: 
+            pass
 
 class terrainsprites(pygame.sprite.Sprite):
     def __init__(self, color_,coords, width,height) -> None:
