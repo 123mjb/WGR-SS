@@ -7,6 +7,7 @@ import json
 
 with open("levels.json","r") as read:
     lvlsobj = json.load(read)
+    print(lvlsobj)
 pygame.init()
 FPS = 60
 clock = pygame.time.Clock()
@@ -168,8 +169,8 @@ class portalsprites(pygame.sprite.Sprite):
         self.rect.x = coords[0]
         self.rect.y = coords[1]
     def changelevel(self):
-        if self.interact ==0:levels.start()
-        elif self.interact ==1:levels.one()
+        if self.interact ==0:Levels.build(0)
+        elif self.interact ==1:Levels.build(1)
 
 def draw_rect_alpha(surface,rect):
     shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
@@ -181,7 +182,7 @@ class Levels():
         self.w = (255,255,255)
         self.p = (255,127.5,255)
         self.g = (0,255,0)
-        
+        self.coord = [(screensize[0]/2,screensize[1]*9/10),(screensize[0]/2,screensize[1]*9/10)]
         self.pw = screensize[0]/40
         self.ph = screensize[1]/5
     def reset(self,coords:tuple[float,float]):
@@ -189,19 +190,71 @@ class Levels():
         portal_sprites.empty()
         object_.rect.centerx = coords[0]
         object_.rect.bottom = coords[1]
-    def start(self):
-        self.reset((screensize[0]/2,screensize[1]*9/10))
-        self.createt(self.w,(0,screensize[1] - screensize[1]/10),screensize[0],screensize[1]/10)
-        self.createp(self.p,(0,screensize[1]*4/5-screensize[1]/10),self.pw,self.ph,1)
-        self.createt(self.w,(screensize[0]/3,screensize[1]*7/10),screensize[0]/3,screensize[1]/20)
-    def one(self):
-        self.reset((screensize[0]/2,screensize[1]*9/10))
-        self.createt(self.w,(0,screensize[1] - screensize[1]/10),screensize[0],screensize[1]/10)
-        self.createp(self.p,(0,screensize[1]*9/10 - self.ph),self.pw,self.ph,0)
-    def createt(self,colour:tuple[int,int,int],coords,length:float,height:float):
-        terrain_sprites.add(terrainsprites(colour,coords,length,height))
-    def createp(self,colour,coords,length,height,lvl):
-        portal_sprites.add(portalsprites(colour,coords,length,height,lvl))
+    def build(self,num):
+        self.reset(self.coord[num])
+        self.create(num)
+    def create(self,num):
+        for i in range(0,len(lvlsobj["levels"][0][str(num)]["t"])):
+            terrain_sprites.add(terrainsprites((float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["r"]),float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["g"]),float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["b"]))\
+                ,(self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["l"]["x"]),self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["l"]["y"]))\
+                    ,self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["h"])\
+                        ,self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["w"])))
+        for i in range(0,len(lvlsobj["levels"][0][str(num)]["p"])):
+            portal_sprites.add(portalsprites((float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["r"]),float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["g"]),float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["b"]))\
+                ,(self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["l"]["x"]),self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["l"]["y"]))\
+                    ,self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["h"])\
+                        ,self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["w"])\
+                            ,int(lvlsobj["levels"][0]["0"]["p"][str(i)]["le"])))
+    def interpret(self,string:str):
+        s = list(string)
+        p = []
+        for i in range(0,len(s)):
+            if s[i] == "s": s[i] = str(screensize[0])
+            if s[i] == "d": s[i] = str(screensize[1])
+        for i in range(0,len(s)):
+            if i > len(s) - 1: break
+            if s[i] == "*": 
+                p = []
+                if i > 1:
+                    for j in range(0,i-1):
+                        p.append(s[j])
+                p.append(str(int(s[i-1])*int(s[i+1])))
+                if len(s) - i > 2:
+                    for j in range(i+2,len(s) - 1):
+                        p.append(s[j])
+                s=p
+            if s[i] == "/": 
+                p = []
+                if i > 1:
+                    for j in range(0,i-1):
+                        p.append(s[j])
+                p.append(str(int(s[i-1])/int(s[i+1])))
+                if len(s) - i > 2:
+                    for j in range(i+2,len(s) - 1):
+                        p.append(s[j])
+                s=p
+        for i in range(0,len(s)):
+            if s[i] == "+": 
+                p = []
+                if i > 1:
+                    for j in range(0,i-1):
+                        p.append(s[j])
+                p.append(str(int(s[i-1])+int(s[i+1])))
+                if len(s) - i > 2:
+                    for j in range(i+2,len(s) - 1):
+                        p.append(s[j])
+                s=p
+            if s[i] == "-": 
+                p = []
+                if i > 1:
+                    for j in range(0,i-1):
+                        p.append(s[j])
+                p.append(str(int(s[i-1])-int(s[i+1])))
+                if len(s) - i > 2:
+                    for j in range(i+2,len(s) - 1):
+                        p.append(s[j])
+                s=p
+        return int(float(s[0]))
 terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
@@ -211,57 +264,9 @@ object_.rect.x = screen.get_width()/2
 object_.rect.y = screen.get_height()/2
 all_sprites_list.add(object_)
 levels = Levels()
-levels.start()
+levels.build(0)
 
-def interpret(string:str):
-    s = string.split("")
-    p = []
-    for i in range(0,len(s)):
-        if s[i] == "s": s[i] = str(screensize[0])
-        if s[i] == "d": s[i] = str(screensize[1])
-    for i in range(0,len(s)):
-        if s[i] == "*": 
-            p = []
-            if i > 1:
-                for j in range(0,i-1):
-                    p.append(s[j])
-            p.append(str(int(s[i-1])*int(s[i+1])))
-            if len(s) - i > 2:
-                for j in range(i+2,len(s) - 1):
-                    p.append(s[j])
-            s=p
-        if s[i] == "/": 
-            p = []
-            if i > 1:
-                for j in range(0,i-1):
-                    p.append(s[j])
-            p.append(str(int(s[i-1])/int(s[i+1])))
-            if len(s) - i > 2:
-                for j in range(i+2,len(s) - 1):
-                    p.append(s[j])
-            s=p
-    for i in range(0,len(s)):
-        if s[i] == "+": 
-            p = []
-            if i > 1:
-                for j in range(0,i-1):
-                    p.append(s[j])
-            p.append(str(int(s[i-1])+int(s[i+1])))
-            if len(s) - i > 2:
-                for j in range(i+2,len(s) - 1):
-                    p.append(s[j])
-            s=p
-        if s[i] == "-": 
-            p = []
-            if i > 1:
-                for j in range(0,i-1):
-                    p.append(s[j])
-            p.append(str(int(s[i-1])-int(s[i+1])))
-            if len(s) - i > 2:
-                for j in range(i+2,len(s) - 1):
-                    p.append(s[j])
-            s=p
-    return s[0]
+
         
 
 while running:
