@@ -1,0 +1,1 @@
+[print("a"*(i<5) or i)for i in range(0,10)]
