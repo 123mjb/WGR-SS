@@ -7,7 +7,6 @@ import json
 
 with open("levels.json", "r") as read:
     lvlsobj = json.load(read)
-    print(lvlsobj)
 pygame.init()
 FPS = 60
 clock = pygame.time.Clock()
@@ -221,9 +220,6 @@ def draw_rect_alpha(surface, rect):
 
 class Levels():
     def __init__(self) -> None:
-        self.w = (255, 255, 255)
-        self.p = (255, 127.5, 255)
-        self.g = (0, 255, 0)
         self.coord = [(screensize[0]/2, screensize[1]*9/10),
                       (screensize[0]/2, screensize[1]*9/10)]
         self.pw = screensize[0]/40
