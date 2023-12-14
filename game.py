@@ -208,9 +208,9 @@ class portalsprites(pygame.sprite.Sprite):
 
     def changelevel(self):
         if self.interact == 0:
-            Levels.build(0)
+            levels.build(0)
         elif self.interact == 1:
-            Levels.build(1)
+            levels.build(1)
 
 
 def draw_rect_alpha(surface, rect):
@@ -240,12 +240,12 @@ class Levels():
         self.create(num)
 
     def create(self, num):
-        for i in range(0, len(lvlsobj["levels"][0][str(num)]["t"])):
-            terrain_sprites.add(terrainsprites((float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["r"]), float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["g"]), float(lvlsobj["levels"][0]["0"]["t"][str(i)]["c"]["b"])), (self.interpret(
-                lvlsobj["levels"][0]["0"]["t"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["h"]), self.interpret(lvlsobj["levels"][0]["0"]["t"][str(i)]["w"])))
-        for i in range(0, len(lvlsobj["levels"][0][str(num)]["p"])):
-            portal_sprites.add(portalsprites((float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["r"]), float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["g"]), float(lvlsobj["levels"][0]["0"]["p"][str(i)]["c"]["b"])), (self.interpret(lvlsobj["levels"][0]["0"]["p"][str(
-                i)]["l"]["x"]), self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["h"]), self.interpret(lvlsobj["levels"][0]["0"]["p"][str(i)]["w"]), int(lvlsobj["levels"][0]["0"]["p"][str(i)]["le"])))
+        for i in range(0, len(lvlsobj["levels"][num][str(num)]["t"])):
+            terrain_sprites.add(terrainsprites((float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["b"])), (self.interpret(
+                lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["w"])))
+        for i in range(0, len(lvlsobj["levels"][num][str(num)]["p"])):
+            portal_sprites.add(portalsprites((float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["b"])), (self.interpret(
+                lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["w"]),int(lvlsobj["levels"][num][str(num)]["p"][str(i)]["le"])))
 
     def interpret(self, string: str):
         s = list(string)
@@ -290,7 +290,7 @@ object_.rect.y = screen.get_height()/2
 all_sprites_list.add(object_)
 levels = Levels()
 levels.build(0)
-print(o.interact for o in portal_sprites.sprites())
+
 
 while running:
     for event in pygame.event.get():
@@ -302,8 +302,6 @@ while running:
     terrain_sprites.draw(screen)
     portal_sprites.draw(screen)
     all_sprites_list.draw(screen)
-    try : print(pygame.sprite.spritecollideany(object_, portal_sprites).interact)
-    except: pass
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
