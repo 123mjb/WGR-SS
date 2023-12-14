@@ -211,49 +211,45 @@ class Levels():
         for i in range(0,len(s)):
             if s[i] == "s": s[i] = str(screensize[0])
             if s[i] == "d": s[i] = str(screensize[1])
-        for i in range(0,len(s)):
-            if i > len(s) - 1: break
-            if s[i] == "*": 
-                p = []
-                if i > 1:
-                    for j in range(0,i-1):
-                        p.append(s[j])
-                p.append(str(int(s[i-1])*int(s[i+1])))
-                if len(s) - i > 2:
-                    for j in range(i+2,len(s) - 1):
-                        p.append(s[j])
-                s=p
-            if s[i] == "/": 
-                p = []
-                if i > 1:
-                    for j in range(0,i-1):
-                        p.append(s[j])
-                p.append(str(int(s[i-1])/int(s[i+1])))
-                if len(s) - i > 2:
-                    for j in range(i+2,len(s) - 1):
-                        p.append(s[j])
-                s=p
-        for i in range(0,len(s)):
-            if s[i] == "+": 
-                p = []
-                if i > 1:
-                    for j in range(0,i-1):
-                        p.append(s[j])
-                p.append(str(int(s[i-1])+int(s[i+1])))
-                if len(s) - i > 2:
-                    for j in range(i+2,len(s) - 1):
-                        p.append(s[j])
-                s=p
-            if s[i] == "-": 
-                p = []
-                if i > 1:
-                    for j in range(0,i-1):
-                        p.append(s[j])
-                p.append(str(int(s[i-1])-int(s[i+1])))
-                if len(s) - i > 2:
-                    for j in range(i+2,len(s) - 1):
-                        p.append(s[j])
-                s=p
+        while (len(x)>1):
+            for i in range(0,len(s)):
+                
+                if s[i] == "*": 
+                    s[i]=str(float(s[i-1])*float(s[i+1]))
+                    s.remove(i+1)
+                    s.remove(i-1)
+                    break
+                if s[i] == "/": 
+                    p = []
+                    if i > 1:
+                        for j in range(0,i-1):
+                            p.append(s[j])
+                    p.append(str(int(s[i-1])/int(s[i+1])))
+                    if len(s) - i > 2:
+                        for j in range(i+2,len(s) - 1):
+                            p.append(s[j])
+                    s=p
+            for i in range(0,len(s)):
+                if s[i] == "+": 
+                    p = []
+                    if i > 1:
+                        for j in range(0,i-1):
+                            p.append(s[j])
+                    p.append(str(int(s[i-1])+int(s[i+1])))
+                    if len(s) - i > 2:
+                        for j in range(i+2,len(s) - 1):
+                            p.append(s[j])
+                    s=p
+                if s[i] == "-": 
+                    p = []
+                    if i > 1:
+                        for j in range(0,i-1):
+                            p.append(s[j])
+                    p.append(str(int(s[i-1])-int(s[i+1])))
+                    if len(s) - i > 2:
+                        for j in range(i+2,len(s) - 1):
+                            p.append(s[j])
+                    s=p
         return int(float(s[0]))
 terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
