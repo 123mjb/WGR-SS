@@ -220,7 +220,7 @@ def draw_rect_alpha(surface, rect):
 
 class Levels():
     def __init__(self) -> None:
-        self.coord = [(screensize[0]/2, screensize[1]*9/10),
+        self.coord = [(screensize[0]/10, screensize[1]*9/10),
                       (screensize[0]/2, screensize[1]*9/10)]
         self.pw = screensize[0]/40
         self.ph = screensize[1]/5
@@ -250,7 +250,7 @@ class Levels():
                 s[i] = str(screensize[0])
             if s[i] == "d":
                 s[i] = str(screensize[1])
-        while (len(s) > 1):
+        while (len(s) > 1 and("*"in s or "/"in s)):
             for i in range(0, len(s)):
                 if s[i] == "*":
                     s[i] = str(float(s[i-1])*float(s[i+1]))
@@ -262,6 +262,7 @@ class Levels():
                     s.remove(s[i+1])
                     s.remove(s[i-1])
                     break
+        while (len(s) > 1):
             for i in range(0, len(s)):
                 if s[i] == "+":
                     s[i] = str(float(s[i-1])+float(s[i+1]))
