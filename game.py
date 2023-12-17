@@ -15,10 +15,10 @@ screen = pygame.display.set_mode(screensize)
 running = True
 white = (255, 255, 255)
 
-
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, colour, height, width) -> None:
         super().__init__()
+        self.jnm = True
         self.sprint = False
         self.wj = False
         self.oheight = height
@@ -34,7 +34,7 @@ class Sprite(pygame.sprite.Sprite):
         self.jumping = False
         self.crouching = False
         self.ymoment = 0
-        self.sincestartofjump = 0
+        self.startofjump = 0
         self.falling = False
 
         head_width = width/5
@@ -45,7 +45,7 @@ class Sprite(pygame.sprite.Sprite):
         legs_height = height*5/16
         body_height = height-(head_height+shoulder_height+legs_height)
 
-        self.image = pygame.Surface([width, height])
+        self.image = pygame.Surface([width, height],pygame.SRCALPHA)
         # head
         pygame.draw.rect(self.image, colour, pygame.Rect(
             (width-head_width)/2, 0, head_width, head_height))
@@ -67,21 +67,28 @@ class Sprite(pygame.sprite.Sprite):
                          9/16, head_height+shoulder_height+body_height, body_width*7/16+1, legs_height))
 
         self.rect = self.image.get_rect()
+        self.rect.width = self.adwidth
+        self.rect.height = self.adheight
 
     def movesideways(self, direction):
-        self.adwidth = self.owidth * self.adjustmentw
-        self.adheight = self.owidth * self.adjustmenth
-        self.image = pygame.Surface([self.adwidth, self.adheight])
-        draw_rect_alpha(self.image, self.image.get_rect())
+        if self.jnm:
+            self.rect.move_ip(0,self.adheight - self.owidth * self.adjustmentw)
+            self.adwidth = self.owidth * self.adjustmentw
+            self.adheight = self.owidth * self.adjustmentw
+            self.image = pygame.Surface([self.adwidth, self.adwidth],pygame.SRCALPHA)
+            self.rect.width = self.adwidth
+            self.rect.height = self.adwidth
+            self.jnm = False
+        self.image.fill((255, 255, 255, 0))
         self.progression += 10*direction*-1
         if self.progression > 359:
             self.progression = 0
         adjusted_colour = (
             255-self.colour[0], 255-self.colour[1], 255-self.colour[2])
-        pygame.gfxdraw.filled_circle(self.image, int(round(
-            self.adwidth/2)), int(round(self.adheight/2)), int(round(self.adwidth/2)), self.colour)
-        pygame.gfxdraw.circle(self.image, int(round(self.adheight/2)), int(
-            round(self.adheight/2)), int(round(self.adwidth/2)), self.colour)
+        pygame.gfxdraw.filled_circle(self.image, int(
+            self.adwidth/2), int(self.adheight/2), int(self.adwidth/2), self.colour)
+        pygame.gfxdraw.circle(self.image, int(self.adwidth/2), int(
+            self.adheight/2), int(self.adwidth/2), self.colour)
         try:
             s
         except NameError:
@@ -89,14 +96,20 @@ class Sprite(pygame.sprite.Sprite):
         if self.progression % 20 == 0:
             s = random.randrange(0, 5)
         for i in range(0, len(self.rs)):
-            pygame.draw.arc(self.image, adjusted_colour, Rect(int(round((self.adheight-self.adheight*self.rs[i])/2)), int(round((self.adheight-self.adheight*self.rs[i])/2)), int(round(
-                self.adheight*self.rs[i])), int(round(self.adheight*self.rs[i]))), math.radians(self.progression+self.degs[i]), math.radians(self.progression+self.degs[i]+45+s), int(round(self.adwidth/2/15)))
+            pygame.draw.arc(self.image, adjusted_colour, 
+                            Rect(int((self.adwidth-self.adwidth*self.rs[i])/2), int((self.adheight-self.adheight*self.rs[i])/2), int(self.adwidth*self.rs[i]), int(self.adheight*self.rs[i])), 
+                            math.radians(self.progression+self.degs[i]), math.radians(self.progression+self.degs[i]+45+s), int(round(self.adwidth/2/15)))
 
     def jump(self):
-        self.adheight = self.oheight * self.adjustmenth
-        self.adwidth = self.owidth * self.adjustmentw
-        self.image = pygame.Surface([self.adwidth, self.adheight])
-
+        if not self.jnm:
+            self.rect.move_ip(0,self.adheight - self.oheight * self.adjustmenth)
+            self.adheight = self.oheight * self.adjustmenth
+            self.adwidth = self.owidth * self.adjustmentw 
+            self.image = pygame.Surface([self.adwidth, self.adheight],pygame.SRCALPHA)
+            self.rect.width = self.adwidth
+            self.rect.height = self.adheight
+            self.jnm = True
+        self.image.fill((255, 255, 255, 0))
         head_width = self.adwidth/5
         head_height = self.adheight/4
         shoulder_height = self.adheight/8
@@ -104,7 +117,6 @@ class Sprite(pygame.sprite.Sprite):
         body_width = self.adwidth/2
         legs_height = self.adheight*5/16
         body_height = self.adheight-(head_height+shoulder_height+legs_height)
-        draw_rect_alpha(self.image, self.image.get_rect())
         # head
         pygame.draw.rect(self.image, self.colour, pygame.Rect(
             (self.adwidth-head_width)/2, 0, head_width, head_height))
@@ -134,22 +146,27 @@ class Sprite(pygame.sprite.Sprite):
         if pressed_keys[K_w] or pressed_keys[K_SPACE]:
             self.jump()
             self.jumping = True
-            if not self.falling or self.wj:
+            if not self.falling:
                 self.ymoment = 17
+            if self.wj and pygame.time.get_ticks()-self.startofjump > 450:
+                self.startofjump = pygame.time.get_ticks()
+                self.ymoment = 20
         else:
             self.jumping = False
         if pressed_keys[K_s]:
             self.crouching = True
         if pressed_keys[K_a]:
             if self.rect.left > 0:
-                self.movecheck(-7 if self.sprint else -5)
+                self.movecheck(-8 if self.sprint else -5)
                 if not self.falling:
                     self.movesideways(-1)
         if pressed_keys[K_d]:
             if self.rect.right < screen.get_width():
-                self.movecheck(7 if self.sprint else 5)
+                self.movecheck(8 if self.sprint else 5)
                 if not self.falling:
                     self.movesideways(1)
+        else:
+            self.movecheck(0)
         self.rect.move_ip(0, -self.ymoment)
         __ = pygame.sprite.spritecollideany(self, terrain_sprites)
         if not __ is None:
@@ -169,6 +186,8 @@ class Sprite(pygame.sprite.Sprite):
             pygame.sprite.spritecollideany(self, portal_sprites).changelevel()
         except:
             pass
+        if self.rect.bottom > screensize[1]:
+            levels.build(levels.CL)
 
     def movecheck(self, direction):
         self.rect.move_ip(direction, 0)
@@ -182,8 +201,6 @@ class Sprite(pygame.sprite.Sprite):
                 self.wj = True
         else:
             self.wj = False
-            pass
-
 
 class terrainsprites(pygame.sprite.Sprite):
     def __init__(self, color_, coords, width, height) -> None:
@@ -206,24 +223,22 @@ class portalsprites(pygame.sprite.Sprite):
         self.rect.y = coords[1]
 
     def changelevel(self):
-        if self.interact == 0:
-            levels.build(0)
-        elif self.interact == 1:
-            levels.build(1)
+        levels.build(self.interact)
+        levels.CL = self.interact
 
 
 def draw_rect_alpha(surface, rect):
     shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
-    pygame.draw.rect(shape_surf, (255, 255, 255, 1), shape_surf.get_rect())
+    pygame.draw.rect(shape_surf, (255, 255, 255, 0), rect)
     surface.blit(shape_surf, rect)
 
 
 class Levels():
     def __init__(self) -> None:
         self.coord = [(screensize[0]/10, screensize[1]*9/10),
-                      (screensize[0]/2, screensize[1]*9/10)]
-        self.pw = screensize[0]/40
-        self.ph = screensize[1]/5
+                      (screensize[0]/2, screensize[1]*9/10),
+                      (0,0)]
+        self.CL = 0
 
     def reset(self, coords: tuple[float, float]):
         terrain_sprites.empty()
@@ -236,15 +251,17 @@ class Levels():
         self.create(num)
 
     def create(self, num):
-        for i in range(0, len(lvlsobj["levels"][num][str(num)]["t"])):
-            terrain_sprites.add(terrainsprites((float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["b"])), (self.interpret(
-                lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["w"])))
-        for i in range(0, len(lvlsobj["levels"][num][str(num)]["p"])):
-            portal_sprites.add(portalsprites((float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["b"])), (self.interpret(
-                lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["w"]),int(lvlsobj["levels"][num][str(num)]["p"][str(i)]["le"])))
+        _t = lvlsobj["levels"][num]["t"]
+        for i in range(0, len(_t)):
+            terrain_sprites.add(terrainsprites((float(_t[i]["c"][0]), float(_t[i]["c"][1]), float(_t[i]["c"][2])), (self.interpret(
+                _t[i]["l"]["x"]), self.interpret(_t[i]["l"]["y"])), self.interpret(_t[i]["h"]), self.interpret(_t[i]["w"])))
+        _p = lvlsobj["levels"][num]["p"]
+        for i in range(0, len(_p)):
+            portal_sprites.add(portalsprites((float(_p[i]["c"][0]), float(_p[i]["c"][1]), float(_p[i]["c"][2])), (self.interpret(
+                _p[i]["l"]["x"]), self.interpret(_p[i]["l"]["y"])), self.interpret(_p[i]["h"]), self.interpret(_p[i]["w"]),int(_p[i]["le"])))
 
     def interpret(self, string: str):
-        s = list(string)
+        s = string.split(" ")
         for i in range(0, len(s)):
             if s[i] == "s":
                 s[i] = str(screensize[0])
@@ -254,25 +271,29 @@ class Levels():
             for i in range(0, len(s)):
                 if s[i] == "*":
                     s[i] = str(float(s[i-1])*float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
                 if s[i] == "/":
                     s[i] = str(float(s[i-1])/float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
         while (len(s) > 1):
             for i in range(0, len(s)):
                 if s[i] == "+":
                     s[i] = str(float(s[i-1])+float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
                 if s[i] == "-":
-                    s[i] = str(float(s[i-1])-float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    s[i] = str(float(s[i-1]) - float(s[i+1]))
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
         return int(float(s[0]))
 
@@ -281,7 +302,7 @@ terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
-object_ = Sprite(white, 100, 100)
+object_ = Sprite(white, 100, 80)
 object_.rect.x = screen.get_width()/2
 object_.rect.y = screen.get_height()/2
 all_sprites_list.add(object_)

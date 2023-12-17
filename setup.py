@@ -8,13 +8,13 @@ packages = ["idna","pygame","random","math","json"]
 options = {
     'build_exe': {    
         'packages':packages,
-    },    
+    },
 }
 
 setup(
-    name = "A",
+    name = "B",
     options = options,
-    version = "1.0",
-    description = 'A',
+    version = "2.0",
+    description = 'B',
     executables = executables
 )

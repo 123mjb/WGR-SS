@@ -24,7 +24,7 @@ class terrainsprites(pygame.sprite.Sprite):
         self.rect.y = coords[1]
         
 class portalsprites(pygame.sprite.Sprite):
-    def __init__(self, color_, coords, width, height, level) -> None:
+    def __init__(self, color_:tuple, coords, width, height, level) -> None:
         super().__init__()
         self.image = pygame.Surface([width, height])
         self.rect = self.image.get_rect()
@@ -46,24 +46,26 @@ class Levels():
         self.pw = screensize[0]/40
         self.ph = screensize[1]/5
 
-    def reset(self, coords: tuple[float, float]):
+    def reset(self):
         terrain_sprites.empty()
         portal_sprites.empty()
 
     def build(self, num):
-        self.reset(self.coord[num])
+        self.reset()
         self.create(num)
 
     def create(self, num):
-        for i in range(0, len(lvlsobj["levels"][num][str(num)]["t"])):
-            terrain_sprites.add(terrainsprites((float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["t"][str(i)]["c"]["b"])), (self.interpret(
-                lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["t"][str(i)]["w"])))
-        for i in range(0, len(lvlsobj["levels"][num][str(num)]["p"])):
-            portal_sprites.add(portalsprites((float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["r"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["g"]), float(lvlsobj["levels"][num][str(num)]["p"][str(i)]["c"]["b"])), (self.interpret(
-                lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["x"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["l"]["y"])), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["h"]), self.interpret(lvlsobj["levels"][num][str(num)]["p"][str(i)]["w"]),int(lvlsobj["levels"][num][str(num)]["p"][str(i)]["le"])))
+        _t = lvlsobj["levels"][num]["t"]
+        for i in range(0, len(_t)):
+            terrain_sprites.add(terrainsprites((float(_t[i]["c"][0]), float(_t[i]["c"][1]), float(_t[i]["c"][2])), (self.interpret(
+                _t[i]["l"]["x"]), self.interpret(_t[i]["l"]["y"])), self.interpret(_t[i]["h"]), self.interpret(_t[i]["w"])))
+        _p = lvlsobj["levels"][num]["p"]
+        for i in range(0, len(_p)):
+            portal_sprites.add(portalsprites((float(_p[i]["c"][0]), float(_p[i]["c"][1]), float(_p[i]["c"][2])), (self.interpret(
+                _p[i]["l"]["x"]), self.interpret(_p[i]["l"]["y"])), self.interpret(_p[i]["h"]), self.interpret(_p[i]["w"]),int(_p[i]["le"])))
 
     def interpret(self, string: str):
-        s = list(string)
+        s = string.split(" ")
         for i in range(0, len(s)):
             if s[i] == "s":
                 s[i] = str(screensize[0])
@@ -73,25 +75,29 @@ class Levels():
             for i in range(0, len(s)):
                 if s[i] == "*":
                     s[i] = str(float(s[i-1])*float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
                 if s[i] == "/":
                     s[i] = str(float(s[i-1])/float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
         while (len(s) > 1):
             for i in range(0, len(s)):
                 if s[i] == "+":
                     s[i] = str(float(s[i-1])+float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
                 if s[i] == "-":
-                    s[i] = str(float(s[i-1])-float(s[i+1]))
-                    s.remove(s[i+1])
-                    s.remove(s[i-1])
+                    s[i] = str(float(s[i-1]) - float(s[i+1]))
+                    a = [s[i-1],s[i+1]]
+                    s.remove(a[0])
+                    s.remove(a[1])
                     break
         return int(float(s[0]))
     
@@ -101,14 +107,22 @@ all_sprites_list = pygame.sprite.Group()
 
 levels = Levels()
 levels.build(0)
+level = 0
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[K_0]:
+        level = 0
+    if pressed_keys[K_1]:
+        level = 1
+    if pressed_keys[K_2]:
+        level = 2
     with open("levels.json", "r") as read:
         lvlsobj = json.load(read)
-    levels.build(0)
+    levels.build(level)
     all_sprites_list.update()
     screen.fill((0, 0, 0))
     terrain_sprites.draw(screen)
