@@ -138,6 +138,8 @@ class Sprite(pygame.sprite.Sprite):
                          9/16, head_height+shoulder_height+body_height, body_width*7/16+1, legs_height))
 
     def move(self):
+        if not pygame.sprite.spritecollideany(self,spike_sprites) is None:
+            levels.build(levels.CL)
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[K_LSHIFT]:
             self.sprint = True
@@ -158,12 +160,12 @@ class Sprite(pygame.sprite.Sprite):
         if pressed_keys[K_a]:
             if self.rect.left > 0:
                 self.movecheck(-8 if self.sprint else -5)
-                if not self.falling:
+                if not self.falling and not self.jumping:
                     self.movesideways(-1)
         if pressed_keys[K_d]:
             if self.rect.right < screensize[0]:
                 self.movecheck(8 if self.sprint else 5)
-                if not self.falling:
+                if not self.falling and not self.jumping:
                     self.movesideways(1)
         self.rect.move_ip(0, -self.ymoment)
         __ = pygame.sprite.spritecollideany(self, terrain_sprites)
@@ -208,6 +210,15 @@ class terrainsprites(pygame.sprite.Sprite):
         self.rect.x = coords[0]
         self.rect.y = coords[1]
 
+class Deathsprites(pygame.sprite.Sprite):
+    def __init__(self, color_, coords, width, height) -> None:
+        super().__init__()
+        self.image = pygame.Surface([width, height])
+        pygame.draw.rect(self.image, color_, pygame.Rect(0, 0, width, height))
+        self.rect = self.image.get_rect()
+        self.rect.x = coords[0]
+        self.rect.y = coords[1]
+
 
 class portalsprites(pygame.sprite.Sprite):
     def __init__(self, color_, coords, width, height, level) -> None:
@@ -233,6 +244,7 @@ class Levels():
     def reset(self, coords: tuple[float, float]):
         terrain_sprites.empty()
         portal_sprites.empty()
+        spike_sprites.empty()
         object_.rect.centerx = coords[0]
         object_.rect.bottom = coords[1]
 
@@ -249,6 +261,15 @@ class Levels():
         for i in range(0, len(_p)):
             portal_sprites.add(portalsprites((float(_p[i]["c"][0]), float(_p[i]["c"][1]), float(_p[i]["c"][2])), (self.interpret(
                 _p[i]["l"]["x"]), self.interpret(_p[i]["l"]["y"])), self.interpret(_p[i]["h"]), self.interpret(_p[i]["w"]),int(_p[i]["le"])))
+        _s = lvlsobj["levels"][num]["s"]
+        if len(_s)>0:
+            for i in range(0, len(_s)):
+                for j in range(0,5):
+                    spike_sprites.add(Deathsprites((float(_s[i]["c"][0]), float(_s[i]["c"][1]), float(_s[i]["c"][2])), 
+                                                   (int(round(( self.interpret(_s[i]["l"]["x"]) + self.interpret(_s[i]["h"]) * (1-(j + 1)/6)/2))), 
+                                                    int(round(( self.interpret(_s[i]["l"]["y"]) + self.interpret(_s[i]["w"]) * (1-((5-j) + 1)/6)/2)))), 
+                                                   self.interpret(_s[i]["h"]) * (j + 1)/6, 
+                                                   self.interpret(_s[i]["w"])/6))
 
     def interpret(self, string: str):
         s = string.split(" ")
@@ -290,6 +311,7 @@ class Levels():
 
 terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
+spike_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
 object_ = Sprite(white, 100, 80)
@@ -309,6 +331,7 @@ while running:
     screen.fill((0, 0, 0))
     terrain_sprites.draw(screen)
     portal_sprites.draw(screen)
+    spike_sprites.draw(screen)
     all_sprites_list.draw(screen)
     clock.tick(FPS)
     pygame.display.flip()
