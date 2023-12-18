@@ -165,8 +165,6 @@ class Sprite(pygame.sprite.Sprite):
                 self.movecheck(8 if self.sprint else 5)
                 if not self.falling:
                     self.movesideways(1)
-        else:
-            self.movecheck(0)
         self.rect.move_ip(0, -self.ymoment)
         __ = pygame.sprite.spritecollideany(self, terrain_sprites)
         if not __ is None:
@@ -195,10 +193,9 @@ class Sprite(pygame.sprite.Sprite):
         if not __ is None:
             if direction > 0:
                 self.rect.right = __.rect.left
-                self.wj = True
             elif direction < 0:
                 self.rect.left = __.rect.right
-                self.wj = True
+            self.wj = True
         else:
             self.wj = False
 
