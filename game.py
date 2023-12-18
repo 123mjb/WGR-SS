@@ -148,7 +148,7 @@ class Sprite(pygame.sprite.Sprite):
             self.jumping = True
             if not self.falling:
                 self.ymoment = 17
-            if self.wj and pygame.time.get_ticks()-self.startofjump > 450:
+            if self.wj and pygame.time.get_ticks()-self.startofjump > 300:
                 self.startofjump = pygame.time.get_ticks()
                 self.ymoment = 20
         else:
@@ -161,7 +161,7 @@ class Sprite(pygame.sprite.Sprite):
                 if not self.falling:
                     self.movesideways(-1)
         if pressed_keys[K_d]:
-            if self.rect.right < screen.get_width():
+            if self.rect.right < screensize[0]:
                 self.movecheck(8 if self.sprint else 5)
                 if not self.falling:
                     self.movesideways(1)
@@ -196,7 +196,7 @@ class Sprite(pygame.sprite.Sprite):
             if direction > 0:
                 self.rect.right = __.rect.left
                 self.wj = True
-            else:
+            elif direction < 0:
                 self.rect.left = __.rect.right
                 self.wj = True
         else:
@@ -226,18 +226,11 @@ class portalsprites(pygame.sprite.Sprite):
         levels.build(self.interact)
         levels.CL = self.interact
 
-
-def draw_rect_alpha(surface, rect):
-    shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
-    pygame.draw.rect(shape_surf, (255, 255, 255, 0), rect)
-    surface.blit(shape_surf, rect)
-
-
 class Levels():
     def __init__(self) -> None:
         self.coord = [(screensize[0]/10, screensize[1]*9/10),
                       (screensize[0]/2, screensize[1]*9/10),
-                      (0,0)]
+                      (10,10)]
         self.CL = 0
 
     def reset(self, coords: tuple[float, float]):
