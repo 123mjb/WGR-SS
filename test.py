@@ -49,6 +49,7 @@ class Levels():
     def reset(self):
         terrain_sprites.empty()
         portal_sprites.empty()
+        spike_sprites.empty()
 
     def build(self, num):
         self.reset()
@@ -63,6 +64,15 @@ class Levels():
         for i in range(0, len(_p)):
             portal_sprites.add(portalsprites((float(_p[i]["c"][0]), float(_p[i]["c"][1]), float(_p[i]["c"][2])), (self.interpret(
                 _p[i]["l"]["x"]), self.interpret(_p[i]["l"]["y"])), self.interpret(_p[i]["h"]), self.interpret(_p[i]["w"]),int(_p[i]["le"])))
+        _s = lvlsobj["levels"][num]["s"]
+        if len(_s)>0:
+            for i in range(0, len(_s)):
+                for j in range(0,5):
+                    spike_sprites.add(Deathsprites((float(_s[i]["c"][0]), float(_s[i]["c"][1]), float(_s[i]["c"][2])), 
+                                                   (int(round(( self.interpret(_s[i]["l"]["x"]) + self.interpret(_s[i]["h"]) * (1-(j + 1)/6)/2))), 
+                                                    int(round(( self.interpret(_s[i]["l"]["y"]) + self.interpret(_s[i]["w"]) * (1-((5-j) + 1)/6)/2)))), 
+                                                   self.interpret(_s[i]["h"]) * (j + 1)/6, 
+                                                   self.interpret(_s[i]["w"])/6))
 
     def interpret(self, string: str):
         s = string.split(" ")
@@ -103,6 +113,7 @@ class Levels():
     
 terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
+spike_sprites = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
 levels = Levels()
@@ -127,6 +138,7 @@ while running:
     screen.fill((0, 0, 0))
     terrain_sprites.draw(screen)
     portal_sprites.draw(screen)
+    spike_sprites.draw(screen)
     all_sprites_list.draw(screen)
     clock.tick(FPS)
     pygame.display.flip()
