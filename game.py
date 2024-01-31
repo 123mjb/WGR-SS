@@ -14,6 +14,7 @@ screensize = (1280, 720)
 screen = pygame.display.set_mode(screensize)
 running = True
 white = (255, 255, 255)
+creating = False
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, colour, height, width) -> None:
@@ -308,6 +309,56 @@ class Levels():
                     break
         return int(float(s[0]))
 
+class Creating:
+    def __init__(self) -> None:
+        self.obj = 0
+        self.level = 0
+        self.startclickloc = (0,0)
+        self.clicking = False
+    def mouseinteractionscontroller(self):
+        pygame.event.get()
+        mousepressed = pygame.mouse.get_pressed(num_buttons=3)
+        if mousepressed[0]:
+            if not self.clicking:
+                self.clicking = True
+                self.startclickloc = pygame.mouse.get_pos()
+        elif self.clicking:
+            self.clicking = False
+            self.build(pygame.mouse.get_pos())
+            levels.build(self.level)
+    def build(self,pos2):
+        if self.obj == 0:
+            lvlsobj[self.level]["t"].append({"c": ["255","255","255"],\
+                    "l": {"x": str(min([self.startclickloc[0],pos2[0]])),"y": str(min([self.startclickloc[1],pos2[1]]))},\
+                    "h": str(abs(pos2[0]-self.startclickloc[0])),\
+                    "w": str(abs(pos2[1]-self.startclickloc[1]))\
+                })
+        if self.obj == 1:
+            lvlsobj[self.level]["p"].append({"c": ["255","255","255"],\
+                    "l": {"x": str(min([self.startclickloc[0],pos2[0]])),"y": str(min([self.startclickloc[1],pos2[1]]))},\
+                    "h": str(abs(pos2[0]-self.startclickloc[0])),\
+                    "w": str(abs(pos2[1]-self.startclickloc[1])),\
+                    "le": str(self.level + 1)\
+                })
+        if self.obj == 2:
+            lvlsobj[self.level]["t"].append({"c": ["255","255","255"],\
+                    "l": {"x": str(min([self.startclickloc[0],pos2[0]])),"y": str(min([self.startclickloc[1],pos2[1]]))},\
+                    "h": str(abs(pos2[0]-self.startclickloc[0])),\
+                    "w": str(abs(pos2[1]-self.startclickloc[1]))\
+                })
+    def update(self):
+        pressed_keys = pygame.key.get_pressed()
+        if pressed_keys[K_0]:
+            self.level = 0
+            levels.build(self.level)
+        if pressed_keys[K_1]:
+            self.level = 1
+            levels.build(self.level)
+        if pressed_keys[K_2]:
+            self.level = 2
+            levels.build(self.level)
+        self.mouseinteractionscontroller()
+create = Creating()
 
 terrain_sprites = pygame.sprite.Group()
 portal_sprites = pygame.sprite.Group()
@@ -320,19 +371,31 @@ object_.rect.y = screen.get_height()/2
 all_sprites_list.add(object_)
 levels = Levels()
 levels.build(0)
-
+time = pygame.time.get_ticks()
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    object_.move()
-    all_sprites_list.update()
+    pressed_keysa = pygame.key.get_pressed()
+    if pressed_keysa[K_p]:
+        if creating:
+            creating = False
+        else:
+            creating = True
     screen.fill((0, 0, 0))
-    terrain_sprites.draw(screen)
-    portal_sprites.draw(screen)
-    spike_sprites.draw(screen)
-    all_sprites_list.draw(screen)
+    if creating:
+        create.update()
+        if pygame.time.get_ticks() - time > 4000:
+            with open("levels.json", "w") as write:
+                json.dump(lvlsobj,write)
+    else:
+        object_.move()
+        all_sprites_list.update()
+        terrain_sprites.draw(screen)
+        portal_sprites.draw(screen)
+        spike_sprites.draw(screen)
+        all_sprites_list.draw(screen)
     clock.tick(FPS)
     pygame.display.flip()
 pygame.quit()
